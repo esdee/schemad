@@ -45,13 +45,15 @@
        (remove :db/valueType)
        (remove #(system-identity? (:db/ident %)))))
 
+(defn- identity-grouping-fn
+  [{id :db/ident}]
+  (let [group-id (str id)]
+    (.substring group-id
+                0
+                (.indexOf group-id "/"))))
 (defn group-entities
   [entities]
-  (group-by #(let [group-id (str (:db/ident %))]
-              (.substring group-id
-                          0
-                          (.indexOf group-id "/")))
-            entities))
+  (group-by identity-grouping-fn entities))
 
 (defn parse-schema
   "Given a schema clojure data, return a map with the keys:

@@ -112,6 +112,4 @@
                                             :db/doc "Currency common symbol e.g. $",
                                             :db/ident :currency/symbol
                                             :db/valueType :db.type/string}]
-                                          :in-any-order)
-
-   ))
+                                          :in-any-order)))
