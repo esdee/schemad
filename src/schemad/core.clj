@@ -13,9 +13,9 @@
 
 (defn get-user-entities
   "Return a seq of the user entitites in the database.
-  User entities are non system entities.
-  A user entity consisst of a map with the keys:
-  :db/id :db/ident :db/valueType :db/cardinality :db/doc"
+   User entities are non system entities.
+   A user entity consisst of a map with the keys:
+   :db/id :db/ident :db/valueType :db/cardinality :db/doc"
   [db]
   (let [all (q '[:find ?a ?attr ?type ?card ?doc
                  :where
@@ -35,8 +35,8 @@
 
 (defn get-enums
   "Return a seq of the enums in the database.
-  A enum is a map with the following keys:
-  :db/id :db/identity"
+   A enum is a map with the following keys:
+   :db/id :db/identity"
   [db]
   (->> (q '[:find ?e :where [?e :db/ident _]] db)
        (map first)
@@ -48,24 +48,43 @@
 (defn- identity-grouping-fn
   [{id :db/ident}]
   (let [group-id (str id)]
-    (.substring group-id
-                0
-                (.indexOf group-id "/"))))
+    (.substring group-id 0 (.indexOf group-id "/"))))
+
 (defn group-entities
+  ""
   [entities]
   (group-by identity-grouping-fn entities))
 
+(defn group-enums
+  ""
+  [enums]
+  (group-by identity-grouping-fn enums))
+
 (defn parse-schema
-  "Given a schema clojure data, return a map with the keys:
-  :entities and :emums"
+  "Given a schema as clojure data, return a map with the keys:
+   :entities and :enums"
   [schema]
   (let [uri (str "datomic:mem://" (java.util.UUID/randomUUID))]
-   (try
-     (d/create-database uri)
-     (let [conn (d/connect uri)
-           _ @(d/transact conn schema)
-           dbase (db conn)]
-       {:entities (get-user-entities dbase)
-        :enums (get-enums dbase)})
-     (finally
-      (d/delete-database uri)))))
+    (try
+      (d/create-database uri)
+      (let [conn (d/connect uri)
+            _ @(d/transact conn schema)
+            dbase (db conn)]
+        {:entities (group-entities (get-user-entities dbase))
+         :enums (group-enums (get-enums dbase))})
+      (finally
+        (d/delete-database uri)))))
+
+(defn eval-text
+  [text]
+  (binding [*read-eval* false]
+    (read-string text)))
+
+(defn text->schema
+  [text]
+  (eval-text text))
+
+(defn file->schema
+  [file]
+  (text->schema
+    (slurp file)))
