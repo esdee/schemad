@@ -16,9 +16,7 @@
 
 (defn- eval-schema
   [file]
-  (binding [*read-eval* false]
-    (read-string
-     (slurp (str "resources/" file ".edn")))))
+  (core/file->schema (str "resources/" file ".edn")))
 
 (defn- schema->seq
   [schema]
@@ -60,8 +58,8 @@
             :in-any-order)))
 
 (fact
- "group-entities should take a seq of entities {:db/identity :custmomer/firstName, :db.valueType string ...}
- and return a map where each key is the db entity 'customer' and each value is a seq of the  attributes"
+ "group-entities should take a seq of entities {:db/identity :customer/firstName, :db.valueType string ...}
+ and returns a map where each key is the db entity 'customer' and each value is a seq of the attributes"
  (let [grouped-entities (core/group-entities
                          (schema->seq (eval-schema "credit-card-schema")))]
    (keys grouped-entities) => (just [":customer" ":creditCardCharge" ":currency"]
@@ -109,7 +107,38 @@
                                             :db/ident :currency/name
                                             :db/valueType :db.type/string}
                                            {:db/cardinality :db.cardinality/one
-                                            :db/doc "Currency common symbol e.g. $",
+                                            :db/doc "Currency common symbol e.g. $"
                                             :db/ident :currency/symbol
                                             :db/valueType :db.type/string}]
                                           :in-any-order)))
+
+(fact
+  "group enums should take a set of enums {:db/identity :creditCardCharge.status/disputed }
+   and returns a map where each key is the the db entity 'creditChargeCharge.status and each value
+   is a seq of the attrbutes"
+  (let [grouped-enums (core/group-enums
+                        [{:db/ident :creditCardCharge.status/disputed}
+                         {:db/ident :creditCardCharge.status/failed}
+                         {:db/ident :creditCardCharge.status/succeeded}])]
+    (keys grouped-enums) =>  (just [":creditCardCharge.status"] :in-any-order)
+    (grouped-enums ":creditCardCharge.status")
+    => (just [{:db/ident :creditCardCharge.status/disputed}
+              {:db/ident :creditCardCharge.status/failed}
+              {:db/ident :creditCardCharge.status/succeeded}]
+             :in-any-order)))
+
+(facts
+  "a parsed schema should include the grouped-entities and grouped-enums"
+  (:entities (core/parse-schema (eval-schema "credit-card-schema")))
+  => {}
+  (:enums (core/parse-schema (eval-schema "credit-card-schema")))
+  => {}
+  (:entities (core/parse-schema (eval-schema "seattle-schema")))
+  => {}
+  (:enums (core/parse-schema (eval-schema "seattle-schema")))
+  => {}
+  (:entities (core/parse-schema (eval-schema "mbrainz-schema")))
+  => {}
+  (:enums (core/parse-schema (eval-schema "mbrainz-schema")))
+  => {}
+  )
