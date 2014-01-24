@@ -8,3 +8,5 @@ pom.xml.asc
 /.lein-*
 /.nrepl-port
 repl.clj
+/resources/public/reports
+/resources/temp

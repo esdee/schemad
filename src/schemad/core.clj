@@ -81,7 +81,7 @@
 (defn text->schema
   [text]
   (binding [*read-eval* false]
-    (read-string text))
+    (read-string text)))
 
 (defn file->schema
   [file]

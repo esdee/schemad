@@ -1,6 +1,5 @@
 (ns schemad.handler
   (:require [clojure.java.io :as io]
-            [datomic.api :as d :refer (q db)]
             [compojure.core :refer (defroutes GET POST)]
             [compojure.handler :as handler]
             [compojure.route :as route]
@@ -12,6 +11,7 @@
             [schemad.core :as core]
             [schemad.reports :refer (parsed-schema->html)]))
 
+; Page to input schema details and upload schema ------------------------------
 (defn new-schema
   [& [errors]]
   (html
@@ -32,6 +32,7 @@
         (form/file-upload :file)
         (form/submit-button "upload"))]]))
 
+;; Page to handle schema upload ------------------------------------------------
 (defn handle-upload
   [{:keys [file schema-name schema-description]}]
   (let [id (java.util.UUID/randomUUID)
@@ -40,24 +41,18 @@
     (try
       (let [check-s #(if (empty? (.trim %)) "Unknown" (.trim %))
             sname (check-s schema-name)
-            sdesc (chec-s schema-description)
-            html-report (parsed-schema->html
-                          (core/parse-schema
-                            (core/text->schema
-                              (slurp temp)))
-                          sname
-                          sdesc)
-            ]
-        (do
-            (when (.exists temp) (.delete temp))
-           ;(spit (format "resources/public/reports/%s.n" (check-s schema-name)))
-           ;(spit (format "resources/public/reports/%s.d" (check-s schema-description)))
-           ;(spit (format "resources/public/reports/%s.html" html-report))
-            (response/redirect-after-post (format "/public/reports/%s.html"))))
+            sdesc (check-s schema-description)
+            report (parsed-schema->html
+                    (core/parse-schema (core/file->schema temp)) sname sdesc)
+            output #(spit (format "resources/public/reports/%s.%s" id %1) %2)]
+        (doseq [[postfix content] [["n" sname] ["d" sdesc] ["html" html-report]]]
+          (output postfix content))
+        (response/redirect-after-post (format "/public/reports/%s.html" id)))
       (catch Exception e
-        (throw e)
-        (response/status (new-schema "Could not parse the schema") 400)))))
+        (response/status {:body (new-schema "Could not parse the schema")} 400))
+      (finally (when (.exists temp) (.delete temp))))))
 
+;; Routes and app -------------------------------------------------------------
 (defroutes app-routes
   (GET "/" [] (new-schema))
   (POST "/schemas" req (handle-upload (:params req)))
@@ -65,5 +60,3 @@
   (route/not-found "Not Found"))
 
 (def app (handler/site app-routes))
-
-
