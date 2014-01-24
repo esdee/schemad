@@ -1,0 +1,93 @@
+;; The following datums are defined
+;; customer/firstName
+;; customer/lastName
+;; creditCardCharge/createdAt
+;; creditCardCharge/isPaid
+;; creditCardCharge/isRefunded
+;; creditCardCharge/amount
+;; creditCardCharge/currency
+;; creditCardCharge/customer
+;; creditCardCharge/status
+;; currency/name
+;; currency/symbol
+;; The following enums are created
+;; :creditCardCharge.status/disputed
+;; :creditCardCharge.status/failed
+;; :creditCardCharge.status/succeeded
+[;; Customer Entity ;;;;;;;;;;;;;;;;;;;
+   {:db/id #db/id[:db.part/db]
+    :db/ident :customer/firstName
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "A customer's first name"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :customer/lastName
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "A customer's last name"
+    :db.install/_attribute :db.part/db}
+   ;; Credit Card Charge ;;;;;;;;;;;;;;;;
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/createdAt
+    :db/valueType :db.type/long
+    :db/cardinality :db.cardinality/one
+    :db/doc "Unix timestamp for the creation date of the charge"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/isPaid
+    :db/valueType :db.type/boolean
+    :db/cardinality :db.cardinality/one
+    :db/doc "Set to true if the charge has been paid"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/isRefunded
+    :db/valueType :db.type/boolean
+    :db/cardinality :db.cardinality/one
+    :db/doc "Set to true if the charge has been refunded"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/amount
+    :db/valueType :db.type/long
+    :db/cardinality :db.cardinality/one
+    :db/doc "Charge amount in minimal countries equivalent of cents"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/currency
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc "Currency that the charge is made in"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/customer
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc "Customer to apply the charge to"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :creditCardCharge/status
+    :db/valueType :db.type/ref
+    :db/cardinality :db.cardinality/one
+    :db/doc "What is the current status of the charge - successful, failed, disputed"
+    :db.install/_attribute :db.part/db}
+   ;; Currencies ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   {:db/id #db/id[:db.part/db]
+    :db/ident :currency/name
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "Currency name"
+    :db.install/_attribute :db.part/db}
+   {:db/id #db/id[:db.part/db]
+    :db/ident :currency/symbol
+    :db/valueType :db.type/string
+    :db/cardinality :db.cardinality/one
+    :db/doc "Currency common symbol e.g. $"
+    :db.install/_attribute :db.part/db}
+   ;; Credit Charge Status Enums ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+   [:db/add #db/id[:db.part/user]
+    :db/ident :creditCardCharge.status/succeeded]
+   [:db/add #db/id[:db.part/user]
+    :db/ident :creditCardCharge.status/failed]
+   [:db/add #db/id[:db.part/user]
+    :db/ident :creditCardCharge.status/disputed]
+]

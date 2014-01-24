@@ -6,6 +6,7 @@
 
 ;; Helper fns ---------------------------------------------------------------------
 (defn recreate-db
+  "Drop and recreate the test database"
   [schema]
   (let [uri "datomic:mem://schemad-tests"
         _ (d/delete-database uri)
@@ -25,6 +26,7 @@
        (filter seq)))
 
 (defn- without-id
+  "Drop the identity attribute from a seq of entities"
   [entities]
   (map #(dissoc % :db/id) entities))
 
@@ -140,5 +142,4 @@
   (:entities (core/parse-schema (eval-schema "mbrainz-schema")))
   => {}
   (:enums (core/parse-schema (eval-schema "mbrainz-schema")))
-  => {}
-  )
+  => {})

@@ -2,6 +2,7 @@
   (:require [datomic.api :as d :refer (q db)]))
 
 (defn- system-identity?
+  "Returns true if this identity field used for system entities"
   [identity]
   (re-seq #"^\:db[\.*|\/]" (str identity)))
 
@@ -51,12 +52,14 @@
     (.substring group-id 0 (.indexOf group-id "/"))))
 
 (defn group-entities
-  ""
+  "Group entities based on the root entitt they belong to.
+  For example :customer/firstName, :customer/lastName would be grouped"
   [entities]
   (group-by identity-grouping-fn entities))
 
 (defn group-enums
-  ""
+  "Group enums by their root. For example,
+  :customer.status/dead, :customer.status/alive would be grouped together"
   [enums]
   (group-by identity-grouping-fn enums))
 
@@ -75,14 +78,10 @@
       (finally
         (d/delete-database uri)))))
 
-(defn eval-text
-  [text]
-  (binding [*read-eval* false]
-    (read-string text)))
-
 (defn text->schema
   [text]
-  (eval-text text))
+  (binding [*read-eval* false]
+    (read-string text))
 
 (defn file->schema
   [file]
